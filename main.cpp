@@ -6,15 +6,36 @@ using Eigen::MatrixXd;
 using Eigen::RowVector3d;
 using Eigen::RowVectorXd;
 
+class Activation_ReLU
+{
+private:
+    RowVectorXd m_output_vector;
+    MatrixXd m_output_matrix;
+public:
+    Activation_ReLU() {};
+    MatrixXd getoutput() { return m_output_matrix; };
+    void forward(RowVectorXd& input);
+    void forward(MatrixXd& input);
+};
+
+void Activation_ReLU::forward(RowVectorXd& input)
+{
+    this->m_output_vector = input.unaryExpr([](double x){return x>0 ? x : 0.0;});
+}
+
+void Activation_ReLU::forward(MatrixXd& input)
+{
+    this->m_output_matrix = input.unaryExpr([](double x){return x>0 ? x : 0.0;});
+}
+
 class Layer_Dense
 {
     private:
         int m_inputs, m_neurons;
         RowVectorXd m_biases;
         RowVectorXd generate_biases();
-        MatrixXd m_weights;
+        MatrixXd m_weights, m_output;
         MatrixXd generate_weights();
-        MatrixXd m_output;
 
     public:
         Layer_Dense(int& inputs, int& neurons): m_inputs(inputs), m_neurons(neurons)
@@ -39,7 +60,7 @@ MatrixXd Layer_Dense::generate_weights()
 RowVectorXd Layer_Dense::generate_biases()
 {
     RowVectorXd biases;
-    biases.setRandom(this->m_neurons);
+    biases.setZero(this->m_neurons);
     return biases;
 }
 
@@ -102,8 +123,19 @@ int main()
     ld2.forward(layer1_output);
     MatrixXd layer2_output = ld2.getoutput();
 
-    cout << layer2_output << endl;
-        
+    // cout << layer2_output << endl;
+    int d = 4;
+    int e = 5;
+    Layer_Dense layer1 = Layer_Dense(d, e);
+    layer1.forward(X);
+    MatrixXd l1out = layer1.getoutput();
+    cout << l1out << endl;
+
+    Activation_ReLU activation1 = Activation_ReLU();
+    activation1.forward(l1out);
+    cout << activation1.getoutput() << endl;
+
+
     return 0;
 
 }
